@@ -1,0 +1,73 @@
+---
+title: "Effects of Two Herbicide Treatments on Plant Growth"
+author: "EDeomano"
+date: "10 May 2018"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+editor_options: 
+  chunk_output_type: console
+---
+
+# Setup
+```{r loadPackages, message=FALSE}
+library(tidyverse)
+library(pander)
+```
+
+# Data Description
+Data collected from a design experiment with two herbicides.  Parameters on plan growth were measured.
+
+The data has a total of `r nrow(PlantGrowth)` data points.  While the treatment classifications are `r pander(levels(PlantGrowth$group))`.
+
+```{r dataSummary}
+PlantGrowth %>% 
+  group_by(group) %>% 
+  summarise(`Mean weight` = mean(weight),
+            n = n()) %>%
+  rename(Treatment = group) %>% 
+  pander(justify = "lrr",
+         caption = "*Sample sizes and mean*")
+```
+
+
+```{r boxPlot, fig.width = 6, fig.height = 6, fig.cap = "*Boxplot of dried weight*"}
+ggplot(PlantGrowth,
+       aes(x = group, y = weight, fill = group)) +
+  geom_boxplot() +
+  labs(x = "Treatment",
+       y = "Weight") +
+  guides(fill = FALSE) +
+  theme_bw()
+```
+
+
+# Analysis
+We fit a regression model using weight as the response and group as predictor.
+The model is
+$$y_{ij} = \mu + \alpha_i + \varepsilon{ij}$$
+```{r}
+model_fit <- lm(weight ~ group, data = PlantGrowth)
+anova(model_fit) %>% pander()
+summary(model_fit) %>% pander()
+```
+
+
+# Diagnostic Plots
+```{r, fig.cap = "Residuals versus Fitted Values", fig.width = 6}
+plot(model_fit, which = 1)
+```
+
+```{r, fig.cap = "Normal Q-Q plot", fig.width = 6}
+plot(model_fit, which = 2)
+```
+
+
+# Conclusion
+The end!
+
+```{r}
+sessionInfo()
+```
+
